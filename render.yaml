@@ -1,0 +1,26 @@
+# A paid web service and persistent disk are required. Review current Render
+# pricing and region/data residency in the dashboard before creating resources.
+services:
+  - type: web
+    name: wayfarer-pilot
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.1
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: DATABASE_PATH
+        value: /var/data/wayfarer/travel.sqlite
+    disk:
+      name: wayfarer-data
+      mountPath: /var/data/wayfarer
+      sizeGB: 1

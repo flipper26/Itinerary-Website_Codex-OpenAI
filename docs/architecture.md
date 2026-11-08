@@ -1,0 +1,11 @@
+# Architecture decision 001: modular pilot
+
+One Node 24 process serves a static responsive web client and a JSON backend. Domain validation and entitlement/role policy live in `src/domain.js`; relational persistence and atomic revisions in `src/store.js`; HTTP/session handling in `src/server.js`. SQL migration 001 creates users, sessions, trips, memberships, activities and revision snapshots. No third-party runtime dependency or secret is required for this increment.
+
+The server derives actors from hashed opaque, expiring cookie sessions. Passwords use salted scrypt. Mutations use same-origin checks, JSON content type and SameSite cookies. All trip APIs check membership; activity writes additionally check editor/owner role and expected version within a transaction. Clients cannot assign roles or tiers. Authentication attempts are bounded in process; a deployment needs durable distributed rate limits, verification, recovery and hardened identity integration. Scrypt here is synchronous and requires load evaluation before public exposure.
+
+Trip drafts are preview state, not paid passes. Date-only inputs remain date-only; user-supplied activity local time and IANA zone are preserved. No UTC instant is invented from an ambiguous local time. Scheduling, timezone disambiguation, travel calculation and automatic changes are intentionally unavailable until their validation exists. Locks are stored; no automation executes.
+
+Upcoming integrations must use narrow provider interfaces with provenance/freshness and unavailable states. AI may propose structured changes only after server authorization. Do not introduce AI write tools before membership, entitlements, version guards and approval are tested. Durable jobs/outbox, private object storage and a managed relational database are needed with later generation/import/monitoring work; they are not represented as implemented.
+
+Production requires TLS/secure cookies, verified identity, migrations framework as schema evolves, tested backups/restore, persistent volume permissions/encryption, account deletion/export, recovery, retention, provider circuit breakers, CSRF/adversarial review, monitored service operations and privacy/legal review. SQLite and the in-process limiter are single-instance pilot choices.
